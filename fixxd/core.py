@@ -3,19 +3,40 @@ import sh
 import click
 import sys
 import os
-from .device import list_devices
+from .device import device_list
 from .utils import cd, copy_func
 
-# UIAutomation Instruments Template location. Accurate as at Xcode 6.0.1.
+# UIAutomation Instruments Template location. Accurate as at Xcode 6.3
 INSTRUMENTS_AUTOMATION_TEMPLATE_PATH = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate" # DO NOT CHANGE INDENTATION!
+FIXXD_FILENAME = ".fixxd"
 
 @click.group()
 def fixxd():
     pass
 
+def get_config_dir(current_dir):
+    file = os.path.join(current_dir, FIXXD_FILENAME)
+
+    if os.path.exists(file):
+        return current_dir
+
+    if os.path.ismount(current_dir):
+        return None
+
+    parent = os.path.abspath(os.path.join(current_dir, "../"))
+    if os.path.exists(parent):
+        return get_config_dir(parent)
+
+    return None
+
 def test(app_name, js_path, result_dir = None, device = None):
+    print("Finding folder from {0}".format(os.getcwd()))
+    config_dir = get_config_dir(os.getcwd())
+    print("Config_dir: {0}".format(config_dir))
+    #TODO: Use config dir
+
     if not device:
-        devices = list_devices()
+        devices = device_list()
         if len(devices) == 0:
             raise Exception("Please plug a device")
         device = devices[0]
@@ -25,7 +46,7 @@ def test(app_name, js_path, result_dir = None, device = None):
 
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
-        
+
     with cd(result_dir):
         #TODO: Compile coffee script to js
         #TODO: Copy js to tmp/build dir
@@ -41,7 +62,7 @@ def test(app_name, js_path, result_dir = None, device = None):
 @click.argument("js_path")
 @click.argument("device", default=None, required=False)
 @click.argument("result_dir", default=None, required=False)
-def cli_test():
+def cli_test(*args, **kwargs):
     test(*args, **kwargs)
 
 fixxd.add_command(cli_test, "test")
