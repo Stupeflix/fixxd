@@ -2,38 +2,35 @@
 import sh
 import click
 import sys
-import os
+from os import path, getcwd, makedirs
 from .device import device_list
-from .utils import cd, copy_func
+from .utils import cd, logger
+from .config import get_config
 
 # UIAutomation Instruments Template location. Accurate as at Xcode 6.3
-INSTRUMENTS_AUTOMATION_TEMPLATE_PATH = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate" # DO NOT CHANGE INDENTATION!
-FIXXD_FILENAME = ".fixxd"
+INSTRUMENTS_AUTOMATION_TEMPLATE_PATH = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate"
+
 
 @click.group()
 def fixxd():
     pass
 
-def get_config_dir(current_dir):
-    file = os.path.join(current_dir, FIXXD_FILENAME)
 
-    if os.path.exists(file):
-        return current_dir
+def test(test_file, device=None, verbose=False, debug=False):
+    """
+    Launch UI Automation tests from `test_file` on device `device` using instruments.
+    """
+    logger.debug("Finding folder from {0}".format(getcwd()))
 
-    if os.path.ismount(current_dir):
-        return None
+    if verbose is True:
+        logger.setLevel("INFO")
+    if debug is True:
+        logger.setLevel("DEBUG")
 
-    parent = os.path.abspath(os.path.join(current_dir, "../"))
-    if os.path.exists(parent):
-        return get_config_dir(parent)
+    cfg = get_config(getcwd())
 
-    return None
-
-def test(app_name, js_path, result_dir = None, device = None):
-    print("Finding folder from {0}".format(os.getcwd()))
-    config_dir = get_config_dir(os.getcwd())
-    print("Config_dir: {0}".format(config_dir))
-    #TODO: Use config dir
+    if not cfg:
+        raise Exception("You must be in a fixxd folder")
 
     if not device:
         devices = device_list()
@@ -41,27 +38,28 @@ def test(app_name, js_path, result_dir = None, device = None):
             raise Exception("Please plug a device")
         device = devices[0]
 
-    if not result_dir:
-        result_dir = os.path.join(os.path.dirname(__file__), "../../", "tmp")
+    results_dir = cfg["results_dir"]
 
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+    if not path.exists(results_dir):
+        makedirs(results_dir)
 
-    with cd(result_dir):
-        #TODO: Compile coffee script to js
-        #TODO: Copy js to tmp/build dir
+    test_path = path.abspath(path.join(cfg["tests_dir"], test_file))
+    with cd(results_dir):
+        # TODO: Compile coffee script to js
+        # TODO: Copy js to tmp/build dir
         sh.instruments("-w", device,
                        "-t", INSTRUMENTS_AUTOMATION_TEMPLATE_PATH,
-                       app_name,
-                       "-e", "UIASCRIPT", js_path,
-                       "-e", "UIARESULTSPATH", result_dir,
+                       cfg["app_name"],
+                       "-e", "UIASCRIPT", test_path,
+                       "-e", "UIARESULTSPATH", results_dir,
                        _out=sys.stdout, _err=sys.stderr)
 
+
 @click.command()
-@click.argument("app_name")
-@click.argument("js_path")
+@click.argument("test-file")
 @click.argument("device", default=None, required=False)
-@click.argument("result_dir", default=None, required=False)
+@click.option("--verbose", is_flag=True)
+@click.option("--debug", is_flag=True)
 def cli_test(*args, **kwargs):
     test(*args, **kwargs)
 
