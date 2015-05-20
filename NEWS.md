@@ -1,5 +1,11 @@
 # News
 
+## 0.2
+
+*Release data: 2015-05-20*
+
+- Added Coffeescript support
+
 ## 0.1
 
 *Release date: 2015-05-18*

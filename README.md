@@ -2,12 +2,25 @@
 iOS UIAutomation tests launcher
 
 #installation
-TODO
+```
+git clone git@github.com:Stupeflix/fixxd.git
+cd fixxd
+python setup.py develop
+```
 
+Go in the folder you want to put the tests in:
+```
+echo "app_name:MyApp.app" > .fixxd
+mkdir iphone
+mkdir lib
+```
 #usage
-TODO
+Put your tests in the `iphone`, `ipad` or `universal` folder.
+Put your lib / utils in the `lib` folder.
 
-#contibuting
+Then run `fixxd test iphone/mytest.coffee`
+
+#contributing
 TODO
 
 # thanks
