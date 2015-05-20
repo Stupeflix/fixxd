@@ -3,8 +3,15 @@ import os
 
 FIXXD_CONFIG_FILENAME = ".fixxd"
 
-FIXXD_DEFAULT_CONFIG = {"path": {"tests": "./", "results": "./tmp/results/", "builds":
-                                 "./tmp/builds/"}, "compatibility": ["iphone"], "hardware": ["device", "simulator"]}
+FIXXD_DEFAULT_CONFIG = {
+    "path": {
+        "tests": "./",
+        "results": "./tmp/results/",
+        "build": "./tmp/build/"
+    },
+    "compatibility": ["iphone"],
+    "hardware": ["device", "simulator"]
+}
 
 
 def get_config(current_dir):
@@ -30,7 +37,8 @@ def get_config(current_dir):
 
     values["tests_dir"] = get_dir_value(config_dir, path_values, default_path_values, "tests")
     values["results_dir"] = get_dir_value(config_dir, path_values, default_path_values, "results")
-    values["builds_dir"] = get_dir_value(config_dir, path_values, default_path_values, "builds")
+    values["build_dir"] = get_dir_value(config_dir, path_values, default_path_values, "build")
+    values["lib_dir"] = os.path.join(values["tests_dir"], "lib/")
 
     values["compatibility"] = values["config_dict"].get("compatibility") or FIXXD_DEFAULT_CONFIG["compatibility"]
     values["hardware"] = values["config_dict"].get("hardware") or FIXXD_DEFAULT_CONFIG["hardware"]

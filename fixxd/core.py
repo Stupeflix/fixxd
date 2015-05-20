@@ -6,6 +6,7 @@ from os import path, getcwd, makedirs
 from .device import device_list
 from .utils import cd, logger
 from .config import get_config
+from .prepare import prepare_file, prepare_lib
 
 # UIAutomation Instruments Template location. Accurate as at Xcode 6.3
 INSTRUMENTS_AUTOMATION_TEMPLATE_PATH = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/PlugIns/AutomationInstrument.xrplugin/Contents/Resources/Automation.tracetemplate"
@@ -39,14 +40,26 @@ def test(test_file, device=None, verbose=False, debug=False):
         device = devices[0]
 
     results_dir = cfg["results_dir"]
-
     if not path.exists(results_dir):
         makedirs(results_dir)
 
-    test_path = path.abspath(path.join(cfg["tests_dir"], test_file))
+    build_dir = cfg["build_dir"]
+    if not path.exists(build_dir):
+        makedirs(build_dir)
+
+    # TODO: Detect device from CLI, test_file is meant to become a name only  (test_name)
+    device_dir_name = path.dirname(test_file)
+
+    build_dir_with_device = path.join(build_dir, device_dir_name)
+    if not path.exists(build_dir_with_device):
+        makedirs(build_dir_with_device)
+
+    abs_test_path = path.abspath(path.join(cfg["tests_dir"], test_file))
+    test_path = prepare_file(abs_test_path, build_dir_with_device)
+
+    prepare_lib(cfg["lib_dir"], path.join(build_dir, "lib/"))
+
     with cd(results_dir):
-        # TODO: Compile coffee script to js
-        # TODO: Copy js to tmp/build dir
         sh.instruments("-w", device,
                        "-t", INSTRUMENTS_AUTOMATION_TEMPLATE_PATH,
                        cfg["app_name"],
