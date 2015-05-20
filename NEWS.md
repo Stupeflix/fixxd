@@ -1,8 +1,14 @@
 # News
+## 0.2.1
+
+*Release date: 2015-05-20*
+
+- Fixed: Files in CoffeeScript within the lib folders are now compiled
+- Fixed: Removed first and last line from compiled coffee to enable inline var declarations
 
 ## 0.2
 
-*Release data: 2015-05-20*
+*Release date: 2015-05-20*
 
 - Added Coffeescript support
 
