@@ -3,9 +3,7 @@ iOS UIAutomation tests launcher
 
 #installation
 ```
-git clone git@github.com:Stupeflix/fixxd.git
-cd fixxd
-python setup.py develop
+pip install fixxd
 ```
 
 Go in the folder you want to put the tests in:
